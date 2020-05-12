@@ -1,0 +1,18 @@
+function Anketa_Open_Button(Name, Cost){
+    Cost=Cost.replace(/ /g,"");
+    Cost=Cost.match(/(\d*)\.?(\d*)(,|\.){0,1}(\d+)/)[0];
+    Cost=Cost.replace(/^(\d*)\.?(\d*)(\.|,)(\d+)$/,"$1$2$3$4");
+    Cost=Cost.replace(/,/,".");
+                
+    var Path='https://iforms.forward-bank.com/itrade/data/files/187493825/index.php?cost='+Cost+'&name='+Name+'';
+    var Options='width=840,height=530,top='+((screen.height-540)/2)+',left='+((screen.width-750)/2)+',toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=no,resizable=no';
+         
+    window.open(Path,'gener',Options);
+}
+
+function Anketa_Open_Link(){
+    var Path="https://iforms.forward-bank.com/itrade/data/files/187493825/index.php?cost=&name=";
+    var Options='width=840,height=410,top='+((screen.height-340)/2)+',left='+((screen.width-750)/2)+',toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=no,resizable=no';
+         
+    window.open(Path,'gener',Options);
+}

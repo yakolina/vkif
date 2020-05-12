@@ -1,0 +1,598 @@
+//10-20-30 с сокращенной анкетой
+
+function __log(str){
+    //console.info(str);
+}
+
+var creditPayLater = function(){
+    __log("creditPayLater");
+	var instance;
+	creditPayLater=function(){return instance;};
+	creditPayLater.prototype=this;
+	instance=new creditPayLater();
+	instance.constructor=creditPayLater;
+
+	this.offer=-1;
+	this.price=0;
+	this.model=' ';
+	this.brand=' ';
+	this.plans=[.9, .92, .85, .8, .8, .85, .9, .7, .75];
+	this.prog=[0,4,7];
+    this.showPayLater=0;
+    this.showForwardBank=0;
+	this.currency='грн.';
+};
+
+creditPayLater.prototype._clear=function(){
+    __log("creditPayLater _clear");
+	var _this=new creditPayLater();
+	_this.offer=-1;
+	_this.price=0;
+	_this.model=' ';
+	_this.brand=' ';
+    _this.showPayLater=0;
+    _this.showForwardBank=0;
+};
+creditPayLater.prototype.openCreditForm = function(sh) {
+    __log("creditPayLater openCreditForm");
+	var _this=new creditPayLater();
+        
+	var credPlan=function(e, t) {
+            __log("creditPayLater openCreditForm credPlan");
+		if (typeof e != "undefined") return e.indexOf(t) == -1 ? "none" :""
+		else return t == 0 || t == 4 || t == 7 ? "" :"none"
+	};
+	var monthPay=function(e, t, n) {
+            __log("creditPayLater openCreditForm monthPlan");
+		payment=(e / t / n).toString();
+		return payment.indexOf(".") == -1 ? payment :payment.substring(0, payment.indexOf("."))
+	};
+	var firstPay=function(e, t) {
+            __log("creditPayLater openCreditForm firstPay" );
+		payment=(.5 * e / t).toString();
+		return payment.indexOf(".") == -1 ? payment :payment.substring(0, payment.indexOf("."))
+	};
+	var monthPayHalf=function(e, t) {
+            __log("creditPayLater openCreditForm monthPayHalf");
+		payment=(.5 * e / t / 3).toString();
+		return payment.indexOf(".") == -1 ? payment :payment.substring(0, payment.indexOf("."))
+	};
+	var o=_this.plans,
+		i=_this.prog,
+		e=_this.price,
+		c=_this.currency;
+    var u='<div class="credit-modal-outer js-modal-cart" id="preCreditWindow">\
+            <i class="credit-modal-overlay js-cart-close"></i>\
+            <div class="credit-modal-inner">\
+                <i class="modal-close js-cart-close"></i>\
+                <div class="payment-modal">\
+                    <ul class="payment-modal__tabs js-tabs" data-tabgroup="first-tab-group">' + 
+                        ((parseInt(this.showForwardBank)) ? '<li class="payment-modal__tab"><a href="#tab1" class="payment-modal__tab-link js-tab tabs__link_state_active">Forward Bank</a></li>' : '') +
+                        ((parseInt(this.showPayLater)) ? '<li class="payment-modal__tab"><a href="#tab2" class="payment-modal__tab-link js-tab ' + ((parseInt(this.showForwardBank)) ? '' : 'tabs__link_state_active') + '">Плати позже</a></li>' : '') +
+                    '</ul>\
+                    <div class="payment-modal__content js-tabs-content" id="first-tab-group">' + 
+                        ((parseInt(this.showForwardBank)) ? '<div class="tabs-content__item js-tabs-item" id="tab1">\
+                            <p class="payment-modal__logo"><img src="img/layout/forward-logo.jpg" width="200" alt="Forward Bank"></p>\
+                            <p class="payment-modal__title">«Forward Bank» кредит-рассрочка</p>\
+                            <ul class="payment-modal__list">\
+                                <li class="payment-modal__list-item">Кредит с льготным периодом 4 месяца (комиссия 0% первые 4 месяца, с 5 месяца – 3%);</li>\
+                                <li class="payment-modal__list-item">Первоначальный взнос – от 0% от стоимости товара;</li>\
+                                <li class="payment-modal__list-item">Сумма кредита – до 30 000 грн.;</li>\
+                                <li class="payment-modal__list-item">Срок кредитования – до 36 месяцев;</li>\
+                                <li class="payment-modal__list-item">Досрочное погашение без дополнительных комиссий;</li>\
+                            </ul>\
+                            <a class="button button_color_blue button_size_large payment-modal__button" href="javascript:Anketa_Open_Button(\''+this.brand.replace('"', '&quot;')+'\',\''+e+c+'\')">Оформить</a>\
+                        </div>' : '') +
+                        ((parseInt(this.showPayLater)) ? '<div class="tabs-content__item js-tabs-item" id="tab2">\
+                            <p class="payment-modal__title">Покупка в рассрочку</p>\
+                            <div class="payment-modal__text">\
+                                <p>При доставке товара вы подписываете договор рассрочки и оплачиваете первый платеж в соответствии с условиями выбранного вами пакета рассрочки.</p>\
+                                <p>Остальные платежи вы оплачиваете в любом банке, начиная со следующего месяца в срок до 20 числа. Суммы платежей, указанные ниже, окончательные.</p>\
+                                <p><strong>Оформление рассрочки возможно для любого товара и по всей территории Украины.</strong></p>\
+                                <p>Отправка по рассрочке осуществляется только перевозчиком «Новая Почта».</p>\
+                                <p>Рассрочка оформляется на безналичную стоимость товара — '+e+' '+c+'</p>\
+                            </div>\
+                            <ul class="payment-modal__types">\
+                                <li class="payment-modal__type" style="display:'+credPlan(i,0)+';">\
+                                    <p class="payment-modal__type-title">3 Платежа</p>\
+                                    <div class="payment-modal__type-description">\
+                                        <p>3 платежa по</p>\
+                                        <p><strong>'+monthPay(e,o[0],3)+'</strong> '+c+'</p>\
+                                    </div>\
+                                    <input type="submit"class="button button_color_blue"value="Оформить"onclick="(new creditPayLater()).onPreClick(0);">\
+                                </li>\
+                                <li class="payment-modal__type" style="display:'+credPlan(i,1)+';">\
+                                    <p class="payment-modal__type-title">3 Платежа</p>\
+                                    <div class="payment-modal__type-description">\
+                                        <p>3 платежa по</p>\
+                                        <p><strong>'+monthPay(e,o[1],3)+'</strong> '+c+'</p>\
+                                    </div>\
+                                    <input type="submit"class="button button_color_blue"value="Оформить"onclick="(new creditPayLater()).onPreClick(1);">\
+                                </li>\
+                                <li class="payment-modal__type" style="display:'+credPlan(i,2)+';">\
+                                    <p class="payment-modal__type-title">Четверка</p>\
+                                    <div class="payment-modal__type-description">\
+                                        <p>4 платежa по</p>\
+                                        <p><strong>'+monthPay(e,o[2],4)+'</strong> '+c+'</p>\
+                                    </div>\
+                                    <input type="submit"class="button button_color_blue" value="Оформить"onclick="(new creditPayLater()).onPreClick(2);">\
+                                </li>\
+                                <li class="payment-modal__type" style="display:'+credPlan(i,3)+';">\
+                                    <p class="payment-modal__type-title">Пятерка</p>\
+                                    <div class="payment-modal__type-description">\
+                                        <p>5 платежей по</p>\
+                                        <p><strong>'+monthPay(e,o[3],5)+'</strong> '+c+'</p>\
+                                    </div>\
+                                    <input type="submit"class="button button_color_blue"value="Оформить"onclick="(new creditPayLater()).onPreClick(3);">\
+                                </li>\
+                                <li class="payment-modal__type" style="display:'+credPlan(i,4)+';">\
+                                    <p class="payment-modal__type-title">6 платежей</p>\
+                                    <div class="payment-modal__type-description">\
+                                        <p>6 платежей по</p>\
+                                        <p><strong>'+monthPay(e,o[4],6)+'</strong> '+c+'</p>\
+                                    </div>\
+                                    <input type="submit"class="button button_color_blue"value="Оформить"onclick="(new creditPayLater()).onPreClick(4);">\
+                                </li>\
+                                <li class="payment-modal__type" style="display:'+credPlan(i,5)+';">\
+                                    <p class="payment-modal__type-title">6 платежей</p>\
+                                    <div class="payment-modal__type-description">\
+                                        <p>6 платежей по</p>\
+                                        <p><strong>'+monthPay(e,o[5],6)+'</strong> '+c+'</p>\
+                                    </div>\
+                                    <input type="submit"class="button button_color_blue"value="Оформить"onclick="(new creditPayLater()).onPreClick(5);">\
+                                </li>\
+                                <li class="payment-modal__type" style="display:'+credPlan(i,6)+';">\
+                                    <p class="payment-modal__type-title">Половина</p>\
+                                    <div class="payment-modal__type-description">\
+                                        <p>Первый платеж</p>\
+                                        <p><strong>'+firstPay(e,o[6])+'</strong> '+c+'</p>\
+                                        <p>3 платежa по</p>\
+                                        <p><strong>'+monthPayHalf(e,o[6])+'</strong> '+c+'</p>\
+                                    </div>\
+                                    <input type="submit"class="button button_color_blue"value="Оформить"onclick="(new creditPayLater()).onPreClick(6);">\
+                                </li>\
+                                <li class="payment-modal__type" style="display:'+credPlan(i,7)+';">\
+                                    <p class="payment-modal__type-title">10 платежей</p>\
+                                    <div class="payment-modal__type-description">\
+                                        <p>10 платежей по</p>\
+                                        <p><strong>'+monthPay(e,o[7],10)+'</strong> '+c+'</p>\
+                                    </div>\
+                                    <input type="submit"class="button button_color_blue"value="Оформить"onclick="(new creditPayLater()).onPreClick(7);">\
+                                </li>\
+                                <li class="payment-modal__type" style="display:'+credPlan(i,8)+';">\
+                                    <p class="payment-modal__type-title">10 платежей</p>\
+                                    <div class="payment-modal__type-description">\
+                                        <p>10 платежей по</p>\
+                                        <p><strong>'+monthPay(e,o[8],10)+'</strong> '+c+'</p>\
+                                    </div>\
+                                    <input type="submit"class="button button_color_blue"value="Оформить"onclick="(new creditPayLater()).onPreClick(8);">\
+                                </li>\
+                            </ul>\
+                            <p style="font-size:10px;">Для оформления рассрочки необходимо нажать на кнопку "Оформить" и перейти к заполнению анкеты оформления рассрочки</p>\
+                        </div>' : '') +
+                    '</div>\
+                </div>\
+            </div>\
+        </div>';
+	var shorts='style="display:none;"',
+		longs='',
+		winmarg='450',
+		marleft='';
+	if(sh===1){
+		shorts='',
+		longs='style="display:none;"',
+		winmarg='150',
+		marleft='margin-left:75px;';
+	};
+	var ist='padding:2px;padding-left:4px;background-color:transparent;border-bottom:solid #03499a 1px;border-left:solid #03499a 1px;border-right:0;border-top:0;border-radius:0;';
+	var a='<div id="creditWindowId"class="creditWindow"style="display:none;margin-left:-'+winmarg+'px;"><div id="creditTitle"><span>Покупка в рассрочку</span></div><div class="personal-info"style="margin-top:20px;'+marleft+'"><div class="form-column form-column-1"><div class="form-column-title">Персональные данные</div><div><div class="form-field-row"><label class="form-label field-required">ФИО:</label><input id="fio"type="text"class="credit-input"style="width:100%;'+ist+'"required="" autofocus></div><div class="form-field-row"><label class="form-label field-required">Дата рождения:</label><div class="form-field-group"><input id="bdd"type="text"class="form-field-day"style="width:25%;'+ist+'"required=""><input id="bdm"type="text"class="form-field-month"style="width:25%;'+ist+'"required=""><input id="bdy"type="text"class="form-field-year"style="width:25%;'+ist+'"required=""></div><div class="form-field-row"'+shorts+'><label class="form-label field-required">Контактный телефон:</label><input id="wip1"type="text"class="credit-input"style="width:100%;'+ist+'"required=""></div></div><div class="form-field-row"><label class="form-label field-required">Идентификационный код:</label><input id="inn"type="text"class="credit-input"style="width:100%;'+ist+'"required=""></div><div class="form-field-row"><label class="form-label field-required">Серия и номер паспорта:</label><input id="psp"type="text"class="credit-input"style="width:100%;'+ist+'"required=""></div><div class="form-field-row"'+longs+'><label class="form-label field-required">Кем выдан паспорт:</label><input id="wip"type="text"class="credit-input"style="width:100%;'+ist+'"required=""></div><div class="form-field-row"><label class="form-label field-required">Дата выдачи паспорта:</label><div class="form-field-group"><input id="pd"type="text"class="form-field-day"style="width:25%;'+ist+'"required=""><input id="pm"type="text"class="form-field-month"style="width:25%;'+ist+'"required=""><input id="py"type="text"class="form-field-year"style="width:25%;'+ist+'"required=""></div></div></div></div><div class="form-column form-column-2"'+longs+'><div class="form-column-title">Адрес</div><div><div class="form-field-row"><label class="form-label field-required">Адрес проживания:</label><input id="adr"type="text"style="width:100%;'+ist+'"required=""></div><div class="form-field-row"><label class="form-label field-required">Контактный телефон:</label><input id="phn"type="text"name="phone"style="width:100%;'+ist+'"required=""></div><div class="form-field-row"><label class="form-label field-required">Адрес регистрации:</label><input id="reg"type="text"style="width:100%;'+ist+'"required=""></div><div class="form-field-row"><label class="form-label field-required">Почтовый индекс:</label><input id="zc"type="text"style="width:100%;'+ist+'"required=""></div><div class="form-field-row"><label class="form-label field-required">Домашний телефон:</label><input id="hph"type="text"style="width:100%;'+ist+'"required=""></div><div class="form-field-row"><label class="form-label field-required">e-mail:</label><input id="hpe"type="text"style="width:100%;'+ist+'"required=""></div></div></div><div class="form-column form-column-3"'+longs+'><div class="form-column-title">Работа</div><div><div class="form-field-row"><label class="form-label field-required">Уровень образования:</label><input id="edu"type="text"style="width:100%;'+ist+'"required=""></div><div class="form-field-row"><label class="form-label field-required">Учебное заведение:</label><input id="col"type="text"style="width:100%;'+ist+'"required=""></div><div class="form-field-row"><label class="form-label field-required">Место работы:</label><input id="wrk"type="text"style="width:100%;'+ist+'"required=""></div><div class="form-field-row"><label class="form-label field-required">Должность:</label><input id="wp"type="text"style="width:100%;'+ist+'"required=""></div><div class="form-field-row"><label class="form-label field-required">Адрес работы:</label><input id="wad"type="text"style="width:100%;'+ist+'"required=""></div><div class="form-field-row"><label class="form-label field-required">Рабочий телефон:</label><input id="wph"type="text"style="width:100%;'+ist+'"required=""></div></div></div><div class="form-column form-column-4"'+longs+'><div class="form-column-title">Семья</div><div><div class="form-field-row"><label class="form-label field-required">Семейное положение:</label><input id="ms"type="text"style="width:100%;'+ist+'"required=""></div><div class="form-field-row"><label class="form-label field-required">Количество детей:</label><input id="cc"type="text"style="width:100%;'+ist+'"required=""></div><div class="form-field-row"><label class="form-label field-required">Возраст детей(через ,):</label><input id="ca"type="text"style="width:100%;'+ist+'"required=""></div><div class="form-field-row"><label class="form-label field-required">К-во человек в квартире:</label><input id="foc"type="text"style="width:100%;'+ist+'"required=""></div><div class="form-field-row"><label class="form-label field-required">Комментарий:</label><input id="com"type="text"style="width:100%;'+ist+'"></div></div></div></div><div class="form-button-group"><span class="button-group-half button-group-half-left"><input type="button"class="button button-back"value="Отменить"onclick="(new creditPayLater()).closeCredit(\'creditWindowId\')"> </span><span class="button-group-half button-group-half-right"><input type="submit"class="button button-send"value="Оформить*"id="submitCreditId"></span></div><div class="form-bottom-group"><div>Все поля обязательны для заполнения</div><div>*Нажимая кнопку "Оформить"я даю согласие на обработку моих личных данных</div><div><br>Внимание! Рассрочка выдается только гражданам Украины!<br>Более детальную информацию Вы можете получить у агента по продаже.</div></div></div>';
+	var validCreditData=function() {
+            __log("creditPayLater openCreditForm validCreditData");
+		var e=true,
+			v=function(e) {
+                            __log("creditPayLater openCreditForm validCreditData v");
+				var t=document.getElementById(e).value;
+				if (!t || t === "") {
+					document.getElementById(e).placeholder="Заполните, пожалуйста!";
+					return false
+				}
+				return true
+			};
+
+		e=v("fio") && e;
+		e=v("bdd") && e;
+		e=v("bdm") && e;
+		e=v("bdy") && e;
+		e=v("inn") && e;
+		e=v("psp") && e;
+		e=v("pd") && e;
+		e=v("pm") && e;
+		e=v("py") && e;
+		if(!sh){
+			e=v("wip") && e;
+			e=v("adr") && e;
+			e=v("phn") && e;
+			e=v("reg") && e;
+			e=v("zc") && e;
+			e=v("hph") && e;
+			e=v("edu") && e;
+			e=v("col") && e;
+			e=v("wrk") && e;
+			e=v("wp") && e;
+			e=v("wad") && e;
+			e=v("wph") && e;
+			e=v("ms") && e;
+			e=v("cc") && e;
+			e=v("ca") && e;
+			e=v("foc") && e;
+		}
+		else e=v("wip1") && e;
+		return e
+	};
+
+	var _$=jQuery||$;
+        
+        //var anchorNode = document.createElement('div');
+//        anchorNode.setAttribute("id", "creditContainerDiv");
+//        _$("body").append(anchorNode);
+        
+	_$("body").append(u);
+
+    // Tabs
+    $('.js-tabs-item').hide();
+    $('.js-tabs-item:first-of-type').show();
+    $('.js-tab').click(function(e){
+        e.preventDefault();
+        var $this = $(this),
+            tabgroup = '#'+$this.parents('.js-tabs').data('tabgroup'),
+            others = $this.closest('li').siblings().children('.js-tab'),
+            target = $this.attr('href');
+        others.removeClass('tabs__link_state_active');
+        $this.addClass('tabs__link_state_active');
+        $(tabgroup).children('div').hide();
+        $(target).show();
+    });
+
+    // Modal cart
+    $('.js-cart-close').click(function () {
+        $('.js-modal-cart').fadeOut(300);
+        $('body').removeClass('overflow-hidden');
+    });
+
+	_$("body").append(a);
+    _$("body").append('<div id="fade_credit" class="black_overlay_credit"></div>');
+//        _$(anchorNode).append(u);
+//        _$(anchorNode).append(a);
+//        _$(anchorNode).append('<div id="fade_credit"class="black_overlay_credit"></div>');
+
+        var closeCreditWindow = function() {
+            __log("creditPayLater fade_credit click");
+		_this.closeCredit("creditWindowId");
+		_this.closeCredit("creditWindowId1");
+		_this.closeCredit("creditWindowId2");
+		_this.closeCredit("preCreditWindow");
+		_this._clear();
+	};
+	_$("#fade_credit").click(closeCreditWindow);
+        _$("#preCreditWindow").find(".close").click(closeCreditWindow);
+        
+	_$("#submitCreditId").click(function() {
+            __log("creditPayLater openCreditForm submitCreditId click");
+		if (!validCreditData()) {
+			return
+		};
+
+		var n_val=function(name,def){
+                     __log("creditPayLater openCreditForm n_val");
+			var ldef=def||' ';
+			var elem=document.getElementById(name);
+			if(!elem) return ldef;
+			else return elem.value||ldef;
+		};
+
+		var strukt=function(){
+                     __log("creditPayLater openCreditForm strukt");
+			this.provider='online_store';
+			this.trade_point=document.URL;
+			this.offer_id=_this.offer;
+			var ei=this.extra_info={};
+			var gs=ei.goods_objects={};
+			var go=gs.goods_object={};
+			go.goods_group='';
+			go.goods_sub_group='';
+			go.goods_object='';
+			go.goods_brand=_this.brand||' ';
+			go.goods_model=_this.model||' ';
+			go.goods_price=_this.price||' ';
+			go.goods_invoice='';
+			go.goods_cash_memo_date='';
+
+			var c=this.customer={};
+			var fio=n_val('fio').split(' ');
+			c.last_name=fio[0]||' ';
+			c.first_name=fio[1]||' ';
+			c.middle_name=fio[2]||' ';
+			c.birth_date=n_val('bdy','1900')+'-'+n_val('bdm','01')+'-'+n_val('bdd','01');
+			c.sex=' ';
+			c.passport_series=((/\D+/.exec(n_val('psp'))||[])[0]||' ');
+			c.passport_num=((/[0-9]+/.exec(n_val('psp'))||[])[0]||' ');
+			c.passport_issue_date=n_val('py','1900')+'-'+n_val('pm','01')+'-'+n_val('pd','01');
+			c.passport_issue_org=n_val('wip')+n_val('wip1');
+			c.tax_id=n_val('inn');
+			c.contact_phone=n_val('phn');
+			c.contact_email=n_val('hpe');
+			c.raddr_country='Украина';
+			c.raddr_index=n_val('zc');
+			c.raddr_region=' ';
+			c.raddr_district=' ';
+			c.raddr_loc_type=' ';
+			c.raddr_loc=' ';
+			c.raddr_str_type=' ';
+			c.raddr_str=n_val('reg');
+			c.raddr_build_num=' ';
+			c.raddr_build_housing=' ';
+			c.raddr_appt=' ';
+			c.faddr_equal_raddr_flag=0;
+			c.faddr_str=n_val('adr');
+			c.faddr_phone_num=n_val('hph');
+			c.family_martial_state=n_val('ms');
+			c.i_faddr_pers_num=n_val('foc','1');
+			c.i_family_child_num=n_val('cc','0');
+			c.edu=n_val('edu');
+			c.edu_institution=n_val('col');
+			c.job_emp_name=n_val('wrk');
+			c.job_emp_str=n_val('wad');
+			c.job_phone_num=n_val('wph');
+			c.job_pos=n_val('wp');
+			c.comment=n_val('com');
+			var fc=c.family_children=[];
+			var ca=n_val('ca','0');
+			if(!!ca){
+				ca=ca.replace(' ',',');
+				var chAges=ca.split(',');
+				for (var i=0;i<chAges.length;i++) {
+					fc.push({child:{i_age:(chAges[i])}});
+				};
+			};
+		};
+
+		var makeSoap12=function(){
+                     __log("creditPayLater openCreditForm makeSoap12");
+			var toXML=function(obj){
+				res='';
+				if((typeof obj === 'object')&&(Object.prototype.toString.call(obj) === '[object Array]')){
+					for (var i=0;i<obj.length;i++) res+=toXML(obj[i]);
+				}
+				else
+				for(var f in obj){
+					if(typeof obj[f] === 'object') res+='<'+f+'>'+toXML(obj[f])+'</'+f+'>';
+					else 
+					if((obj[f]||'')==='') res+='<'+f+'/>';
+					else res+='<'+f+'>'+obj[f]+'</'+f+'>';
+				}
+				return res;
+			};
+
+			var str=new strukt();
+			var data=toXML(str);
+			var x='<?xml version="1.0" encoding="UTF-8"?> <SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"><SOAP-ENV:Body><SOAP-ENV:send_loan_request>'+data+'</SOAP-ENV:send_loan_request></SOAP-ENV:Body></SOAP-ENV:Envelope>';
+			return x;
+		};
+
+		var makeJSON=function(){
+                     __log("creditPayLater openCreditForm makeJSON");
+			var form=document.getElementById('creditWindowId'),
+				inps=form.getElementsByTagName('input'),
+				_this=new creditPayLater(),
+				_re1=(new RegExp('"','g')),
+				_re2=(new RegExp("'",'g'));
+				_re3=(new RegExp("\\\\",'g'));
+			var res='{';
+			for (var i=0;i<inps.length;i++) {
+				if(!inps[i].id||inps[i].id==='submitCreditId') continue;
+				res+='"'+inps[i].id+'":"'+inps[i].value.replace(_re1,'').replace(_re2,'').replace(_re3,'/')+'",';
+			};
+			res+='"brand":"'+_this.brand.replace(_re1,'').replace(_re2,'').replace(_re3,'/')+'",';
+			res+='"model":"'+_this.model.replace(_re1,'').replace(_re2,'').replace(_re3,'/')+'",';
+			res+='"price":"'+_this.price+'",';
+			res+='"offer":"'+_this.offer+'",';
+			res+='"URL":"'+document.URL+'"';
+			return res+'}';
+		};
+
+		var success = function(){
+                     __log("creditPayLater openCreditForm success");
+			_this.closeCredit("creditWindowId");
+			_this.openSuccessForm()
+			_this._clear();
+		};
+		_this._ajax("http://gw.ks840.in.ua:8083/loanonline.php?partnerid=01c0efd161aad5b68d5780a2183b190d", {
+			type:"POST",
+			data:makeSoap12(),
+			contentType:"text/xml;charset=utf-8",
+			success:success,
+			error:function(e, t, n) {
+				var _$=jQuery||$;
+				var _this=new creditPayLater();
+				_this._ajax("http://korotenko.me/postman/mailer.php", {
+					type:"POST",
+					data:'message='+makeJSON()+'&error="'+(e.responseText.replace(/\"/g,''))||'Parse error.'+'"',
+					contentType:"application/x-www-form-urlencoded;charset=UTF-8",
+					success:success,
+					error:function(){
+						var _$=jQuery||$;
+						_this.closeCredit("creditWindowId1");
+						_$("#creditWindowId").css("display", "block");
+						_$("#fade_credit").css("display", "block");
+						_this.openErrorForm();
+						_this._clear();
+					}
+				});
+			}
+		});
+	});
+};
+
+creditPayLater.prototype.closeCredit = function(e) {
+     __log("creditPayLater closeCredit");
+	var t;
+	t=document.getElementById(e);
+	if (t && t != null) {
+		t.parentNode.removeChild(t)
+	}
+	t=document.getElementById("fade_credit");
+	if (t && t != null) {
+		t.parentNode.removeChild(t)
+	}
+}
+
+creditPayLater.prototype.openSuccessForm = function() {
+     __log("creditPayLater openSuccessForm");
+	var _this=(new creditPayLater());
+	var e=_this.email||'****@mail.com';
+	var t  = '<div id="creditWindowId1"class="creditWindow" style=" margin-left:-350px;margin-top:-100px;">';
+            t += '<div id="creditTitle"><span>Покупка в рассрочку</span></div>';
+            t += '<div style=" margin:15px;">Отправьте копии страниц паспорта, где есть отметки и ид. кода на ';
+            //t += e;
+            t += 'sklad@aks.ua';
+            t += '<br>';
+            t += 'Подойдут отсканированные копии или сфотографированные на мобильный телефон<br>';
+            t += 'В ближайшее время с Вами свяжется сотрудник магазина для уточнения заказа.</div>';
+            t += '<div class="form-button-group"><span class="button-group-half button-group-half-left">';
+            t += '<input type="button" class="button button-back" value="Закрыть" onclick="(new creditPayLater()).closeCredit(\'creditWindowId1\')">';
+            t += '</span></div></div>';
+	var _$=jQuery||$;
+        
+	_$("body").append(t);
+	_$("body").append('<div id="fade_credit" class="black_overlay_credit"></div>');
+	_$("#fade_credit").click(function() {
+		_this.closeCredit("creditWindowId");
+		_this.closeCredit("creditWindowId1");
+		_this.closeCredit("creditWindowId2");
+		_this._clear();
+	})
+}
+
+creditPayLater.prototype.openErrorForm = function() {
+     __log("creditPayLater openErrorForm");
+	var e='<div id="creditWindowId2"class="creditWindow" style=" margin-left:-350px;margin-top:-100px;z-index:2147483647;"><div id="creditTitle"><span>Покупка в рассрочку</span></div><div style=" margin:15px;">Вашу заявку отправить не удалось! Попробуйте отправить ее еще раз, чуть позже.</div><div class="form-button-group"><span class="button-group-half button-group-half-left"><input type="button" class="button button-back" value="Закрыть" onclick="(new creditPayLater()).closeCredit(\'creditWindowId2\')"></span></div></div>';
+	var _$=jQuery||$;
+	_$("body").append(e)
+}
+
+creditPayLater.prototype.onPreClick = function(cPlan) {
+     __log("creditPayLater onPreClick");
+	var _$=jQuery||$;
+	elem=document.getElementById("preCreditWindow");
+        console.log(elem);
+	if (elem && elem != null) {
+		elem.parentNode.removeChild(elem)
+	}
+	(new creditPayLater()).offer=cPlan+1;
+    _$("#creditWindowId").css("display", "");
+    _$("#fade_credit").css("display", "block");
+}
+
+creditPayLater.prototype._ajax = function(url,params){
+     __log("creditPayLater _ajax");
+	var createXMLHTTPObject = function(){
+			var xmlhttp = false;
+			var XMLHttpFactories = [
+				function(){return new XMLHttpRequest()},
+				function(){return new ActiveXObject("Msxml2.XMLHTTP")},
+				function(){return new ActiveXObject("Msxml3.XMLHTTP")},
+				function(){return new ActiveXObject("Microsoft.XMLHTTP")}
+			];
+
+			for (var i=0;i<XMLHttpFactories.length;i++) {
+				try {
+					xmlhttp = XMLHttpFactories[i]();
+				}
+				catch (e) {
+					continue;
+				}
+				break;
+			}
+			return xmlhttp;
+	};
+	var http = createXMLHTTPObject();
+	if (!http) {
+			if(!!error) error();
+			return;
+	};
+	var http = new XMLHttpRequest();
+	http.open(params.type, url, true);
+	http.setRequestHeader("Content-type", params.contentType);
+	http.onreadystatechange = function() {//Call a function when the state changes.
+			if (http.readyState != 4) return;
+			if (http.status != 200 && http.status != 304) {
+				params.error(http);
+				if(params.complete) params.complete();
+				return;
+			}
+			params.success(http);
+			if(params.complete) params.complete();
+	}
+	http.send(params.data);
+}
+
+function buyInCredit(e, t, n, m, pL, fB, c) {
+     __log("creditPayLater byInCredit");
+	var credit=new creditPayLater();
+	var _$=jQuery||$;
+        
+        var creditNodes = ['creditLoader', 'preCreditWindow', 'fade_credit', 'creditWindowId'];
+        for(var i = 0; i < creditNodes.length; i++){
+            if(_$("#"+creditNodes[i])){
+                _$("#"+creditNodes[i]).remove();
+            }
+        }
+//        if(_$("#creditLoader")){
+//            _$("#creditLoader").remove();
+//        }
+//        if(_$("#fade_credit")){
+//            _$("#fade_credit").remove();
+//        }
+//        if(_$("#creditWindowId")){
+//            _$("#creditWindowId").remove();
+//        }
+	_$("body").append('<div id="creditLoader" class="creditLoader">Loading...</div>');
+	_$("body").append('<div id="fade_credit" class="black_overlay_credit"></div>');
+	if(typeof e === "number") credit.price=e;
+	else credit.price=(e.replace(/\D/g, ""))/100;
+	credit.model=t;
+	credit.brand=n;
+	credit.email=m;
+    credit.showPayLater=pL;
+    credit.showForwardBank=fB;
+    if(!!c) credit.currency=c;
+    if (pL) {
+        credit._ajax("http://gw.ks840.in.ua:8083/loanonline.php?partnerid=01c0efd161aad5b68d5780a2183b190d", {
+			type:"POST",
+			data:'<?xml version="1.0" encoding="UTF-8"?> <SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"><SOAP-ENV:Body><SOAP-ENV:get_product_list><info>{domain:'+document.domain+'}</info></SOAP-ENV:get_product_list></SOAP-ENV:Body></SOAP-ENV:Envelope>',
+			contentType:"text/xml;charset=utf-8",
+			success:function(res){
+				var xml = res.responseXML;
+				if(typeof xml === 'object'){
+					var res = xml.getElementsByTagName('product_list');
+					if(!!res && !!res.length){
+						try {
+							var obj=eval('('+(res[0].textContent||'{}')+')');
+							if(!!obj.o && obj.o.length===9) credit.palns=obj.o;
+							if(!!obj.i && obj.i.length===3) credit.prog=obj.i;
+						}
+						catch(err) {}
+					}
+				}
+			},
+			complete:function(){
+				credit.closeCredit("creditLoader");
+				credit.openCreditForm(1);
+			}
+		});
+    } else {
+        credit.closeCredit("creditLoader");
+        credit.openCreditForm(1);
+    }
+};
+

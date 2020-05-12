@@ -1,0 +1,334 @@
+$(function() {
+    $(document).on("change", "#cargo_id", function() {
+        var cargo_id = $(this).val();
+        $('.meest').hide();
+        $('.novaposhta').hide();
+        $('#warehouse_id').val('0');
+        switch (cargo_id) {
+            case '4': // novaposhta
+                $('.novaposhta').show();
+                $('#city_id').change();
+                break;
+            case '9': // meest
+                $('.meest').show();
+                $('#delivery_dest').change();
+                break;
+            default:
+                $('.city').show();
+        }
+    });
+
+    // Отображение склада Новой Почты на странице оформления заказа
+    $(document).on("change", "#city_id", function() {
+        if ($('#cargo_id').val() == '4') {
+            setWarehouses($(this).val());
+        }
+    });
+
+    $(document).on("change", "#delivery_dest", function() {
+        $('.branch').hide();
+        $('.street').hide();
+        switch ($(this).val()) {
+            case '0': // на склад
+                $('.branch').show();
+                if ($("#meest_city_id").val()) {
+                    setBranches($("#meest_city_id").val());
+                }
+                break;
+            case '1': // до дверей
+                $('.street').show();
+                break;
+        }
+    });
+
+    // Отображение городов, улиц и складов "Міст Експрес"
+    $("#meest_city").autocomplete({
+        source: "/meest/cities/",
+        minLength: 2,
+        select: function(event, ui) {
+            $("#meest_city_id").val(ui.item.id);
+            $("#meest_branch").val('');
+            setBranches($("#meest_city_id").val());
+            $("#meest_street").val('');
+            $("#meest_street_id").val('');
+            $("#meest_street").autocomplete("option", "source", "/meest/streets/" + $("#meest_city_id").val());
+            console.log(ui.item.value);
+        }
+    });
+
+    $("#meest_branch_id").change(function() {
+        $("#meest_branch").val($(this).find("option:selected").text());
+    });
+
+    $("#meest_street").autocomplete({
+        source: "/meest/streets/" + $("#meest_city_id").val(),
+        minLength: 1,
+        select: function(event, ui) {
+            $("#meest_street_id").val(ui.item.id);
+            console.log(ui.item.value);
+        }
+    });
+
+    $(document).on("click", "div.buy-button", function() {
+        var $this = $(this);
+        if (!$this.hasClass("in-cart")) {
+            // change buy button
+            var id = $this.attr("data-cart");
+            $(".bb-" + id).addClass("in-cart").html("В корзине");
+            url = "//" + document.domain + "/cart/add/" + id + "?mcb=json";
+            $.getJSON(url).done(function(data) {
+                trackEvent('Zakaz_Button', 'Click'); // Issue #743 Track event
+                updateCart(data);
+                // show popup cart
+                $(".cart-brief").each(function() {
+                    openCart(this);
+                    return false;
+                });
+            }).fail(function(jqxhr, textStatus, error) {
+                var err = textStatus + ", " + error;
+                console.log("Request failed: " + err);
+            });
+        } else {
+            // show popup cart
+            $(".cart-brief").each(function() {
+                openCart(this);
+                return false;
+            });
+        }
+        return false;
+    });
+
+    $(document).on("click", "a.cb-delete", function() {
+        // change buy button
+        var id = $(this).attr("href").replace("/cart/del/", "");
+        $(".bb-" + id).removeClass("in-cart").html("Купить");
+
+        url = "//" + document.domain + $(this).attr("href") + "?mcb=json";
+        $.getJSON(url).done(function(data) {
+            updateCart(data);
+        });
+        return false;
+    });
+
+    url = "//" + document.domain + "/cart/show/?mcb=json";
+    $.getJSON(url).done(function(data) {
+        updateCart(data);
+    });
+
+    $('.cart-brief').each(function() {
+        var self = this;
+        $(self).on('click', function(e) {
+            e.preventDefault();
+            if ($(self).find('.cb-data strong').length < 1) {
+                return;
+            }
+            openCart(self);
+        });
+    });
+
+    setUpCart();
+
+    var deliveryType = $("input[name='delivery_type']");
+    if (deliveryType.length > 0) {
+        deliveryType.change(changeDelivery);
+    }
+
+    var paymentType = $("input[name='payment_type']");
+    if (paymentType.length > 0) {
+        paymentType.change(changePayment);
+        changePayment();
+    }
+
+    var orderForm = $("#order-form");
+    if (orderForm.length > 0) {
+        orderForm.submit(checkOrder);
+    }
+
+    $(document).on("click", "a.select-item-review", function() {
+        var $d = $('#selectItemReview');
+        $d.modal({
+            overlayId: 'selectItemReviewOverlay',
+            containerId: 'selectItemReviewContainer',
+            overlayClose: true
+        });
+        return false;
+    });
+});
+
+var updateCart = function(data)
+{
+    if (data && data.count) {
+        $(".cart-brief .cb-data").html(
+            '<strong class="value">' + data.count + '</strong> ' + data.item + 
+            ' на сумму <strong>' + data.total + '</strong> ' + data.currency
+        );
+        for (id in data.products) {
+            var product = data.products[id];
+            $('.cart-' + id + ' .subtotal > span').html(product.price * product.qty);
+            var old = $('.cart-' + id + ' .subtotal > .price-old');
+            if (product.is_xsell) {
+                old.find('span > span').html(product.price_orig * product.qty);
+                old.show();
+            } else {
+                old.hide();
+            }
+        }
+        $('.cart-preorder .total > span > span').html(data.total);
+        $(".submitorder").show();
+    } else {
+        $(".cart-brief .cb-data").html('пока нет товаров');
+        $('.cart-preorder .total > span').html('нет товаров');
+        $(".submitorder").hide();
+    }
+};
+
+var setUpCart = function() {
+    $('.cart-preorder .tr').each(function(idx, el) {
+        var $this = $(this),
+        input = $this.find('input'),
+        del = $this.find('.delete'),
+        total = $('.cart-preorder .total span span');
+
+        input.spinner({
+            min: 1,
+            icons: { down: "ui-icon-minus", up: "ui-icon-plus" }
+        }).on("spin", function(event, ui) {
+            $this.find('.subtotal > span').html('...');
+            $this.find('.subtotal > .price-old > span > span').html('...');
+            total.html('...');
+            var id = this.id.replace('qty_', '');
+            url = "//" + document.domain + "/cart/add/" + id + "/qty/" + ui.value + "/set/1?mcb=json";
+            $.getJSON(url).done(function(data) {
+                updateCart(data);
+            });
+        });
+
+        del.on("click", function(e) {
+            e.preventDefault();
+            total.html('...');
+            $this.remove();
+            url = "//" + document.domain + $(this).attr("href") + "?mcb=json";
+            $.getJSON(url).done(function(data) {
+                updateCart(data);
+            });
+            if ($('.cart-preorder .tr').length === 0) {
+                $('.submitorder').hide();
+            }
+            // change buy button
+            var id = $(this).attr("href").replace("/cart/del/", "");
+            $(".bb-" + id).removeClass("in-cart").html("Купить");
+        });
+    });
+};
+
+var openCart = function(el) {
+    url = "//" + document.domain + $('.cb-title').attr("href") + "?mcb=new";
+    return hs.htmlExpand(el, {
+        allowWidthReduction: false,
+        allowHeightReduction: false,
+        wrapperClassName: 'cart-brief-wrapper',
+        width: 800,
+        contentId: 'cart-form',
+        objectType: 'ajax',
+        src: url,
+        cacheAjax: false,
+        forceAjaxReload: true
+    });
+};
+
+var changePayment = function()
+{
+    switch (true) {
+        case $('#payment_type-3').is(':checked'):
+            $('#cargo_id option[value="3"]').hide();
+            break;
+        default:
+            $('#cargo_id option[value="3"]').show();
+    }
+    changeDelivery();
+};
+
+var changeDelivery = function()
+{
+    var $self = $('.self');
+    var $kiev = $('.kiev');
+    var $ukraine = $('.ukraine');
+    var $address = $('.address');
+
+    $self.hide();
+    $kiev.hide();
+    $ukraine.hide();
+    $address.show();
+    switch (true) {
+        case $('#delivery_type-kiev').is(':checked'):
+            $kiev.show();
+            break;
+        case $('#delivery_type-ukraine').is(':checked'):
+            $ukraine.show();
+            $('#cargo_id').change();
+            break;
+        case $('#delivery_type-self').is(':checked'):
+            $self.show();
+            $address.hide();
+            break;
+    }
+};
+
+var checkOrder = function()
+{
+    var pt = $("input[name='payment_type']:checked").val();
+    if (!pt) {
+        alert('Выберите способ оплаты!');
+        return false;
+    }
+    var dt = $("input[name='delivery_type']:checked").val();
+    if (!dt) {
+        alert('Выберите доставку!');
+        return false;
+    } else if (dt == 'ukraine') {
+        if ($('#cargo_id').val() == '0') {
+            alert('Выберите перевозчика!');
+            return false;
+        }
+    }
+    return true;
+};
+
+var setWarehouses = function(city_id) {
+    $('#warehouse_id').empty();
+    $('#warehouse_id').append(new Option('--', '0'));
+    $('#warehouse_id').append(new Option('до дверей', '-1'));
+    $.ajax({
+        type: 'GET',
+        url: '/cart/getwarehouses?city_id=' + city_id,
+        dataType: 'json',
+        success: function(json) {
+            $.each(json, function(index, item) {
+                $('#warehouse_id').append(new Option(item.address_ru, item.number));
+            });
+            var select_id = $('#_warehouse_id').val();
+            if (select_id) {
+                $('#warehouse_id').val(select_id);
+            }
+        }
+    });
+};
+
+var setBranches = function(city_id) {
+    $('#meest_branch_id').empty();
+    $('#meest_branch_id').append(new Option('--', '0'));
+    $.ajax({
+        type: 'GET',
+        url: '/meest/branches/' + city_id,
+        dataType: 'json',
+        success: function(json) {
+            $.each(json, function(index, item) {
+                $('#meest_branch_id').append(new Option(item.value, item.id));
+            });
+            var select_id = $('#_meest_branch_id').val();
+            if (select_id) {
+                $('#meest_branch_id').val(select_id);
+            }
+        }
+    });
+};
